@@ -16,6 +16,8 @@ On a 32-bit Intel system, each word is 4 bytes long and bytes are arranged in li
 
 However, arrays will still sequence from smaller to larger addresses. Therefore, when overwriting an `int` with a byte stream, we need to write each byte in reverse order. We write the LSB first and the MSB last, similar to reading an `int` backwards.
 
+The memory diagram is arranged as such to coincide with how memory is laid out when reading words from gdb.
+
 ```
        0x03 0x02 0x01 0x00
 0x00: |    |    |    |    |
