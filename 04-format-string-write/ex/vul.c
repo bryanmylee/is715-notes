@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]) {
   FILE *fp;
-  char buf[50] = {'\0'};
+  char buf[60] = {'\0'};
 
   struct {
     char name[10];
@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   account.balance = 0;
 
   fp = fopen("abc", "rb");
-  fread(buf, 50, 1, fp);
+  fread(buf, 60, 1, fp);
 
   printf(buf);
   printf("\n%s's balance is %d.\n", account.name, account.balance);
