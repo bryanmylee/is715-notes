@@ -16,21 +16,73 @@ Usually, there are 4 parts to reading arbitrary memory with a format string atta
 
 We want to align injected values to the stack frame width. This makes it possible to read the injected value as a **word**. Otherwise, parts of the injected value will fall into one word and the other parts will cross the boundary into another word.
 
+For example, let `$esp` be at `0x00`. If `&buf = 0x11`, we want to pad the attack string with three bytes `"000"`.
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    |
+               ...
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    |
+       0x17 0x16 0x15 0x14
+0x14: |    |    |    |    |
+```
+
 ### Injection of memory address
 
 `"\x4a\xd5\xff\xff"`
 
-This writes the memory address to the stack.
+This writes the memory address to the stack. Note that endianness still applies and we have to write from the LSB to the MSB.
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    |
+               ...
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    |
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 4a |
+```
 
 ### Argument padding
 
 `%x %x %x %x`
 
-This causes `printf` to continue searching down the stack for more values to read. Since our injected value is aligned to the stack frame, we will eventually be aligned with the memory address to read.
+The arguments to `printf` exist on the stack, and `$esp = 0x00` contains the address of the format string itself. Each `%x` causes `printf` to read and display the next word into `%x`.
+
+Since our injected address is aligned to the stack frame, the next argument will eventually be aligned with the memory address to read.
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    | <- format string
+0x04: |    |    |    |    | <- %x
+0x08: |    |    |    |    | <- %x
+0x0c: |    |    |    |    | <- %x
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    | <- %x
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 4a |
+```
 
 ### Dereferencing the pointer
 
-Unlike most other format parameters, `%s` is passed by reference. Therefore, the argument is **dereferenced** before printing. When we are aligned with the injected memory address to read, `%s` allows us to dereference the address and print the value as a string.
+Unlike most other format parameters, `%s` is passed by reference. Therefore, the argument is **dereferenced** before printing.
+
+When we are aligned with the injected memory address to read, `%s` allows us to dereference the address and print the value as a string.
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    | <- format string
+0x04: |    |    |    |    | <- %x
+0x08: |    |    |    |    | <- %x
+0x0c: |    |    |    |    | <- %x
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    | <- %x
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 4a | <- %s
+```
+
+Therefore, this allows us to read the string stored at `0xffffd54a`.
 
 ## vul1
 
