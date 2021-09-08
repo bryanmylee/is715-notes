@@ -94,6 +94,12 @@ Write the smaller value to the target address with `%n`, then add a `%x` specifi
 
 Lastly, use a second `%n` to write to the second target address.
 
+## 00 byte
+
+If we need to write to a target address `&target_addr` with the null byte `\x00`, then our format string will break as the null byte also represents the end of the string.
+
+In this case, one workaround is to write to the value at `&target_addr + 1` then `&target_addr - 1` to piece the information together.
+
 ## Caveats
 
 One common mistake I've made so far is that my attack string is larger than the buffer can hold.

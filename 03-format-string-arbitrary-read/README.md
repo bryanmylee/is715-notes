@@ -84,6 +84,12 @@ When we are aligned with the injected memory address to read, `%s` allows us to 
 
 Therefore, this allows us to read the string stored at `0xffffd548`.
 
+## 00 byte
+
+If we need to read from a target address `&target_addr` with the null byte `\x00`, then our format string will break as the null byte also represents the end of the string.
+
+In this case, one workaround is to read the value at `&target_addr - 2` and `&target_addr + 2` and piece the information together.
+
 ## vul1
 
 `printf` is called with `buf`, which is read from a file `abc`. To get the memory address `&pwd`, we use gdb to debug the program.
