@@ -8,7 +8,7 @@ If the user-controlled format string is stored on the stack, then this allows us
 
 Usually, there are 4 parts to reading arbitrary memory with a format string attack.
 
-`"000\x4a\xd5\xff\xff %x %x %x %x %s"`
+`"000\x48\xd5\xff\xff %x %x %x %x %s"`
 
 ### Alignment of injected memory address
 
@@ -30,7 +30,7 @@ For example, let `$esp` be at `0x00`. If `&buf = 0x11`, we want to pad the attac
 
 ### Injection of memory address
 
-`"\x4a\xd5\xff\xff"`
+`"\x48\xd5\xff\xff"`
 
 This writes the memory address to the stack. Note that endianness still applies and we have to write from the LSB to the MSB.
 
@@ -41,7 +41,7 @@ This writes the memory address to the stack. Note that endianness still applies 
        0x13 0x12 0x11 0x10
 0x10: | 30 | 30 | 30 |    |
        0x17 0x16 0x15 0x14
-0x14: | ff | ff | d5 | 4a |
+0x14: | ff | ff | d5 | 48 |
 ```
 
 ### Argument padding
@@ -61,7 +61,7 @@ Since our injected address is aligned to the stack frame, the next argument will
        0x13 0x12 0x11 0x10
 0x10: | 30 | 30 | 30 |    | <- %x
        0x17 0x16 0x15 0x14
-0x14: | ff | ff | d5 | 4a |
+0x14: | ff | ff | d5 | 48 |
 ```
 
 ### Dereferencing the pointer
@@ -79,10 +79,10 @@ When we are aligned with the injected memory address to read, `%s` allows us to 
        0x13 0x12 0x11 0x10
 0x10: | 30 | 30 | 30 |    | <- %x
        0x17 0x16 0x15 0x14
-0x14: | ff | ff | d5 | 4a | <- %s
+0x14: | ff | ff | d5 | 48 | <- %s
 ```
 
-Therefore, this allows us to read the string stored at `0xffffd54a`.
+Therefore, this allows us to read the string stored at `0xffffd548`.
 
 ## vul1
 

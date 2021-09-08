@@ -6,11 +6,23 @@ The format specifier `%n` writes the number of bytes written so far from the sta
 
 The initial structure is similar to arbitrary memory read with format strings. However, we replace the last format specifier with `%n`.
 
-`"000\x4a\xd5\xff\xff %x %x %x %x %n"`
+`"000\x48\xd5\xff\xff %x %x %x %x %n"`
 
 ### Writing values
 
-Instead of reading from the address `0xffffd54a`, the format string will write the number of bytes to `0xfffd5fa` instead.
+Instead of reading from the address `0xffffd548`, the format string will write the number of bytes to `0xfffd5fa` instead.
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    | <- format string
+0x04: |    |    |    |    | <- %x
+0x08: |    |    |    |    | <- %x
+0x0c: |    |    |    |    | <- %x
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    | <- %x
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 48 | <- %n
+```
 
 ## Controlling the exact value written
 
@@ -25,13 +37,48 @@ There are a few strategies available to control the value written
 
 One strategy is to run the program under gdb and determine the number of bytes so far by replacing `%n` with `%d`. Then, as long as the number of bytes so far is smaller than the target value, we can pad the output by adding zero-padding to one of the `%x` format specifiers.
 
-`"000\x4a\xd5\xff\xff %x %x %x %0108x %n"`
+`"000\x48\xd5\xff\xff %x %x %x %020x %n"`
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    | <- format string
+0x04: |    |    |    |    | <- %x
+0x08: |    |    |    |    | <- %x
+0x0c: |    |    |    |    | <- %x
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    | <- %020x
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 48 | <- %n
+```
+
+The value `20 + i` is written to `0xffffd548`, where `i` is dynamically determined during runtime by the values on the stack.
 
 ### Write to the `&target_addr - 1` for small values
 
 If a small target value `n` is required, we can write `n * 256` to `&target_addr - 1`.
 
 Since it is highly unlikely for more than 256 bytes to be written by the format string, the arbitrary number of bytes written will only affect the byte at `&target_addr - 1`. `&target_addr` will then receive the value `(n * 256) >> 8 = n`.
+
+Writing the value 5 to `0xffffd548`, `5 * 256 = 1280 = 0x0500`
+
+`"000\x47\xd5\xff\xff %x %x %x %1280x %n"`
+
+```
+       0x03 0x02 0x01 0x00
+0x00: |    |    |    |    | <- format string
+0x04: |    |    |    |    | <- %x
+0x08: |    |    |    |    | <- %x
+0x0c: |    |    |    |    | <- %x
+       0x13 0x12 0x11 0x10
+0x10: | 30 | 30 | 30 |    | <- %0108x
+       0x17 0x16 0x15 0x14
+0x14: | ff | ff | d5 | 49 | <- %n
+               ...
+       0x47 0x46 0x45 0x44
+0x44: | 45 |    |    |    |
+       0x4b 0x4a 0x49 0x48
+0x48: |    |    |    | 05 |
+```
 
 ## Controlling the number of bytes written
 
