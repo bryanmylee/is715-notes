@@ -84,6 +84,24 @@ When we are aligned with the injected memory address to read, `%s` allows us to 
 
 Therefore, this allows us to read the string stored at `0xffffd548`.
 
+## Alignment of chars and strings
+
+`char` and `char[]` will always start on a stack-aligned address and will always occupy memory in word sizes.
+
+* Variables defined after `char` or `char[]` will therefore also start on a stack-aligned address.
+
+```
+char c = 'A';
+int d = 10;
+// &c == 0x10;
+// &d == 0x14;
+
+       0x13 0x12 0x11 0x10
+0x10: | 00 | 00 | 00 | 65 |
+       0x17 0x16 0x15 0x14
+0x14: | 00 | 00 | 00 | 0a | <- %s
+```
+
 ## 00 byte
 
 If we need to read from a target address `&target_addr` with the null byte `\x00`, then our format string will break as the null byte also represents the end of the string.

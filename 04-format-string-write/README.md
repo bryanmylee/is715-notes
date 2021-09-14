@@ -35,7 +35,7 @@ There are a few strategies available to control the value written
 
 ### Run, check, and increment
 
-One strategy is to run the program under gdb and determine the number of bytes so far by replacing `%n` with `%d`. Then, as long as the number of bytes so far is smaller than the target value, we can pad the output by adding zero-padding to one of the `%x` format specifiers.
+One strategy is to run the program under gdb and determine the number of bytes written so far by guess and check. Then, as long as the number of bytes so far is smaller than the target value, we can pad the output by adding zero-padding to one of the `%x` format specifiers.
 
 `"000\x48\xd5\xff\xff %x %x %x %020x %n"`
 
