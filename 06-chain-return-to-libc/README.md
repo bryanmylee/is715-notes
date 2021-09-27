@@ -60,7 +60,7 @@ Then, `leave` pops the stack into `%ebp`.
 ### For general chain of calls
 
 ```
-|      buffer      |     <- %esp
+|      buffer      |    <- %esp
 |       ...        |
 |                  |+   <- %ebp
 |       &f1        | \
