@@ -21,6 +21,8 @@ When the libc instruction is executed, we need to convince the libc function tha
 
 ## Debugging
 
+First, we need to be in a function's execution stack. To do so, set a breakpoint within the function and run the program.
+
 ### Offset between &buffer and $ebp
 
 We first need to get &buffer and $ebp to determine how much padding we need to reach the bottom of the stack frame.

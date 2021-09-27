@@ -40,6 +40,8 @@ Then, `leave` pops the stack into `%ebp`.
 
 ## Creating the stack frame for multiple libc calls
 
+### For two calls
+
 ```
 |      buffer      | <- %esp
 |       ...        |
@@ -54,6 +56,30 @@ Then, `leave` pops the stack into `%ebp`.
 |    arg1 of f2    |
 |       ...        |
 ```
+
+### For general chain of calls
+
+```
+|      buffer      |     <- %esp
+|       ...        |
+|                  |+   <- %ebp
+|       &f1        | \
+|   &leave; ret;   |  |
+|    ...f1_args    |  |
+|                  |<-+
+|       &f2        | \
+|   &leave; ret;   |  |
+|    ...f2_args    |  |
+|                  |<-+
+|       ...        | \
+|                  |<=+
+|       &fn        |
+|   &leave; ret;   |
+|    ...fn_args    |
+|     ...data      |
+```
+
+Place `&next_fn - 4` before each `fn`. The last address can be arbitrary, saving us 4 bytes if needed.
 
 ## Demonstration
 
@@ -317,3 +343,10 @@ Then, `%esp` is used to define the stack for f2.
 |       ...        |
 ```
 
+## Common patterns
+
+When a function is called:
+
+* `$esp` is effectively poppsed into `$eip` without affecting `$ebp`; and
+* we need to ensure that `$esp` is right above the arguments of the function such that `$ebp` will be called to the right memory address.
+  * `$ebp` needs to be 2 above the arg list. When `$ebp` is pushed onto the stack, `$esp` moves 1 position up, then `$ebp` is shifted to `$esp`, effectively putting it 2 above the arg list.
