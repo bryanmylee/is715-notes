@@ -302,7 +302,7 @@ Execute f1, which pushes `%ebp` onto the stack and shifts `%ebp` to `%esp`.
 |       ...        |
 ```
 
-Then, `%esp` is used to define the stack for f1.
+Then, `%esp` is used to define the stack for f2.
 
 ```
 %eip = &f2;
